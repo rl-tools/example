@@ -9,8 +9,14 @@ add_executable(my_pendulum
 )
 #target_compile_definitions(my_pendulum PRIVATE BENCHMARK)
 target_link_libraries(my_pendulum PRIVATE RLtools::RLtools)
-#target_compile_options(my_pendulum PRIVATE -Ofast)
-#target_compile_options(my_pendulum PRIVATE -march=native)
 
-
-
+if(MSVC)
+    target_compile_options(my_pendulum PRIVATE /arch:AVX2)
+    target_compile_options(my_pendulum PRIVATE /fp:fast)
+    target_compile_options(my_pendulum PRIVATE /O2)
+else()
+    target_compile_options(my_pendulum PRIVATE -Ofast)
+    if(NOT APPLE)
+        target_compile_options(my_pendulum PRIVATE -march=native)
+    endif()
+endif()

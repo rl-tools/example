@@ -21,3 +21,6 @@ cmake --build .
 ```
 
 This should be substantially faster. To make it even fast you can disable the evaluation episodes (by enabling the `BENCHMARK` flag in the `CMakeLists.txt`). Furthermore, you can play with options like `-Ofast` and `-march=native` depending on your CPU architecture. For reference, this takes about 600ms on an `i9-10885H` and about 300ms on an `Apple M3`.
+
+
+On windows you should use `cmake --build . --config Release` to build the executable.
