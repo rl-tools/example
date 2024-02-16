@@ -9,7 +9,7 @@ mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
-./src/my_pendulum
+./my_pendulum
 ```
 
 
