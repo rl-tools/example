@@ -74,7 +74,7 @@ namespace rl_tools{
         set(observation, 0, 2, state.theta_dot);
     }
     template<typename DEVICE, typename SPEC, typename RNG>
-    RL_TOOLS_FUNCTION_PLACEMENT static bool terminated(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::State state, RNG& rng){
+    static bool terminated(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::State state, RNG& rng){
         using T = typename SPEC::T;
         return false;
     }
