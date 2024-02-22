@@ -35,8 +35,8 @@ namespace rl_tools{
     typename SPEC::T step(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::State& state, const Matrix<ACTION_SPEC>& action, typename MyPendulum<SPEC>::State& next_state, RNG& rng) {
         static_assert(ACTION_SPEC::ROWS == 1);
         static_assert(ACTION_SPEC::COLS == 1);
-        typedef typename SPEC::T T;
-        typedef typename SPEC::PARAMETERS PARAMS;
+        using T = typename SPEC::T;
+        using PARAMS = typename SPEC::PARAMETERS;
         T u_normalised = get(action, 0, 0);
         T u = PARAMS::MAX_TORQUE * u_normalised;
         T g = PARAMS::G;
@@ -56,7 +56,7 @@ namespace rl_tools{
     }
     template<typename DEVICE, typename SPEC, typename ACTION_SPEC, typename RNG>
     static typename SPEC::T reward(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::State& state, const Matrix<ACTION_SPEC>& action, const typename MyPendulum<SPEC>::State& next_state, RNG& rng){
-        typedef typename SPEC::T T;
+        using T = typename SPEC::T;
         T angle_norm = angle_normalize(device.math, state.theta);
         T u_normalised = get(action, 0, 0);
         T u = SPEC::PARAMETERS::MAX_TORQUE * u_normalised;
@@ -68,7 +68,7 @@ namespace rl_tools{
     static void observe(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::State& state, Matrix<OBS_SPEC>& observation, RNG& rng){
         static_assert(OBS_SPEC::ROWS == 1);
         static_assert(OBS_SPEC::COLS == 3);
-        typedef typename SPEC::T T;
+        using T = typename SPEC::T;
         set(observation, 0, 0, rl_tools::math::cos(device.math, state.theta));
         set(observation, 0, 1, rl_tools::math::sin(device.math, state.theta));
         set(observation, 0, 2, state.theta_dot);
