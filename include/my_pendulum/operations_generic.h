@@ -1,4 +1,4 @@
-
+#include <rl_tools/rl/environments/operations_generic.h>
 // helper functions
 template <typename T>
 T clip(T x, T min, T max){
@@ -17,10 +17,6 @@ T angle_normalize(const DEVICE& dev, T x){
 
 
 namespace rl_tools{
-    template<typename DEVICE, typename SPEC>
-    static void malloc(DEVICE& device, const MyPendulum<SPEC>& env){}
-    template<typename DEVICE, typename SPEC>
-    static void init(DEVICE& device, const MyPendulum<SPEC>& env){}
     template<typename DEVICE, typename SPEC, typename RNG>
     static void sample_initial_state(DEVICE& device, const MyPendulum<SPEC>& env, typename MyPendulum<SPEC>::State& state, RNG& rng){
         state.theta     = random::uniform_real_distribution(typename DEVICE::SPEC::RANDOM(), SPEC::PARAMETERS::INITIAL_STATE_MIN_ANGLE, SPEC::PARAMETERS::INITIAL_STATE_MAX_ANGLE, rng);

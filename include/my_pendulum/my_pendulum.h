@@ -1,3 +1,4 @@
+#include <rl_tools/rl/environments/environments.h>
 template <typename T>
 struct MyPendulumParameters {
     constexpr static T G = 10;
@@ -27,7 +28,7 @@ struct MyPendulumState{
 };
 
 template <typename T_SPEC>
-struct MyPendulum{
+struct MyPendulum: rl_tools::rl::environments::Environment{
     using SPEC = T_SPEC;
     using T = typename SPEC::T;
     using TI = typename SPEC::TI;
