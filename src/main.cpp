@@ -19,7 +19,7 @@ using T = float;
 using TI = typename DEVICE::index_t;
 using PENDULUM_SPEC = MyPendulumSpecification<T, TI, MyPendulumParameters<T>>;
 using ENVIRONMENT = MyPendulum<PENDULUM_SPEC>;
-struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::Parameters<T, TI, ENVIRONMENT>{
+struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParameters<T, TI, ENVIRONMENT>{
     struct PPO_PARAMETERS: rlt::rl::algorithms::ppo::DefaultParameters<T, TI>{
         static constexpr T ACTION_ENTROPY_COEFFICIENT = 0.0;
         static constexpr TI N_EPOCHS = 2;
