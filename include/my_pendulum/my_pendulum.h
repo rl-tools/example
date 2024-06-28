@@ -27,12 +27,20 @@ struct MyPendulumState{
     T theta_dot;
 };
 
+template <typename TI>
+struct MyPendulumFourierObservation{
+    static constexpr TI DIM = 3; // cos(theta), sin(theta), theta_dot
+};
+
 template <typename T_SPEC>
 struct MyPendulum: rl_tools::rl::environments::Environment{
     using SPEC = T_SPEC;
     using T = typename SPEC::T;
     using TI = typename SPEC::TI;
+    using Parameters = typename SPEC::PARAMETERS;
     using State = MyPendulumState<T, TI>;
+    using Observation = MyPendulumFourierObservation<TI>;
+    using ObservationPrivileged = Observation;
     static constexpr TI OBSERVATION_DIM = 3;
     static constexpr TI ACTION_DIM = 1;
 };
