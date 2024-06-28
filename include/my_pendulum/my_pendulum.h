@@ -33,7 +33,7 @@ struct MyPendulumFourierObservation{
 };
 
 template <typename T_SPEC>
-struct MyPendulum: rl_tools::rl::environments::Environment{
+struct MyPendulum: rl_tools::rl::environments::Environment<typename T_SPEC::T, typename T_SPEC::TI>{
     using SPEC = T_SPEC;
     using T = typename SPEC::T;
     using TI = typename SPEC::TI;
