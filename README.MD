@@ -37,6 +37,10 @@ This should be substantially faster. To make it even fast you can disable the ev
 
 ## Experiment Tracking
 
+<div style="text-align: center;">
+<img src="https://raw.githubusercontent.com/rl-tools/media/master/experiment-tracking-screenshot.png" alt="Experiment Tracking Screenshot" width="500">
+</div>
+
 This example also includes the automatic experiment tracking available through the [Loop Interface](https://docs.rl.tools/07-The%20Loop%20Interface.html). More infos about the experiment tracking can be found in the docs: [Experiment Tracking](https://docs.rl.tools/10-Experiment%20Tracking.html). To enable the visualization of trajectories for a custom environment three functions are required (these are defined in `operations_cpu.h` due to their dependency on `std::string`):
 1. [Parameters => JSON](https://github.com/rl-tools/example/blob/39acaa5b5402eacf5c2cab7b2e96db71f2ea110f/include/my_pendulum/operations_cpu.h#L3): Self-explanatory
 2. [State => JSON](https://github.com/rl-tools/example/blob/39acaa5b5402eacf5c2cab7b2e96db71f2ea110f/include/my_pendulum/operations_cpu.h#L8): Self-explanatory
