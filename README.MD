@@ -1,5 +1,5 @@
 # RLtools Example: Implementing a Custom Environment
-This example implements a full pendulum environment including a visualization in `191` lines of code (`115` for the environment + `76` for the UI). You can find the implementation in [include/my_pendulum](./include/my_pendulum)
+This example implements a full pendulum environment (including a visualization) in `191` lines of code (`115` for the environment + `76` for the UI). You can find the implementation in [include/my_pendulum](./include/my_pendulum)
 ## UNIX (Linux / macOS)
 ```
 git clone https://github.com/rl-tools/example
