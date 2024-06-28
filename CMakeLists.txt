@@ -11,7 +11,7 @@ target_link_libraries(my_pendulum PRIVATE RLtools::RLtools)
 
 
 
-if(NOT MSVC)
+if(NOT MSVC AND CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(my_pendulum PRIVATE -Ofast)
     if(NOT APPLE)
         target_compile_options(my_pendulum PRIVATE -march=native)

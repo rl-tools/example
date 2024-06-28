@@ -4,11 +4,13 @@
 
 #include "../include/my_pendulum/my_pendulum.h"
 #include "../include/my_pendulum/operations_generic.h"
+#include "../include/my_pendulum/operations_cpu.h" // JSON conversion functions for the rl::loop::steps::save_trajectories step (stored according to the experiment tracking specification: https://docs.rl.tools/10-Experiment%20Tracking.html)
 
 #include <rl_tools/rl/algorithms/ppo/loop/core/config.h>
 #include <rl_tools/rl/algorithms/ppo/loop/core/operations_generic.h>
-#include <rl_tools/rl/loop/steps/evaluation/config.h>
+#include <rl_tools/rl/loop/steps/extrack/operations_cpu.h>
 #include <rl_tools/rl/loop/steps/evaluation/operations_generic.h>
+#include <rl_tools/rl/loop/steps/save_trajectories/operations_cpu.h>
 
 namespace rlt = rl_tools;
 
@@ -40,7 +42,17 @@ struct LOOP_EVAL_PARAMETERS: rlt::rl::loop::steps::evaluation::Parameters<T, TI,
     static constexpr TI N_EVALUATIONS = NEXT::CORE_PARAMETERS::STEP_LIMIT / EVALUATION_INTERVAL;
 };
 #ifndef BENCHMARK
-using LOOP_CONFIG = rlt::rl::loop::steps::evaluation::Config<LOOP_CORE_CONFIG, LOOP_EVAL_PARAMETERS<LOOP_CORE_CONFIG>>;
+using LOOP_EXTRACK_CONFIG = rlt::rl::loop::steps::extrack::Config<LOOP_CORE_CONFIG>; // Sets up the experiment tracking structure (https://docs.rl.tools/10-Experiment%20Tracking.html)
+using LOOP_EVALUATION_CONFIG = rlt::rl::loop::steps::evaluation::Config<LOOP_EXTRACK_CONFIG, LOOP_EVAL_PARAMETERS<LOOP_EXTRACK_CONFIG>>; // Evaluates the policy in a fixed interval and logs the return
+struct LOOP_SAVE_TRAJECTORIES_PARAMETERS: rlt::rl::loop::steps::save_trajectories::Parameters<T, TI, LOOP_EVALUATION_CONFIG>{
+    static constexpr TI INTERVAL_TEMP = LOOP_CORE_CONFIG::CORE_PARAMETERS::STEP_LIMIT / 10;
+    static constexpr TI INTERVAL = INTERVAL_TEMP == 0 ? 1 : INTERVAL_TEMP;
+    static constexpr TI NUM_EPISODES = 10;
+};
+using LOOP_SAVE_TRAJECTORIES_CONFIG = rlt::rl::loop::steps::save_trajectories::Config<LOOP_EVALUATION_CONFIG, LOOP_SAVE_TRAJECTORIES_PARAMETERS>; // Saves trajectories for replay with the extrack UI
+using LOOP_TIMING_CONFIG = rlt::rl::loop::steps::timing::Config<LOOP_SAVE_TRAJECTORIES_CONFIG>;
+using LOOP_CONFIG = LOOP_TIMING_CONFIG;
+
 #else
 using LOOP_CONFIG = LOOP_CORE_CONFIG;
 #endif
@@ -54,6 +66,10 @@ int main(){
     DEVICE device;
     TI seed = 1337;
     LOOP_STATE ls;
+#ifndef BENCHMARK
+    // Set experiment tracking info
+    ls.extrack_name = "example";
+#endif
     rlt::malloc(device, ls);
     rlt::init(device, ls, seed);
     ls.actor_optimizer.parameters.alpha = 1e-2;
