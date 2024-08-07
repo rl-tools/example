@@ -28,8 +28,8 @@ struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParame
     };
 
     static constexpr TI N_ENVIRONMENTS = 4;
-    static constexpr TI ON_POLICY_RUNNER_STEPS_PER_ENV = 1024;
-    static constexpr TI BATCH_SIZE = 256;
+    static constexpr TI ON_POLICY_RUNNER_STEPS_PER_ENV = 256;
+    static constexpr TI BATCH_SIZE = 64;
     static constexpr TI TOTAL_STEP_LIMIT = 300000;
     static constexpr TI STEP_LIMIT = TOTAL_STEP_LIMIT/(ON_POLICY_RUNNER_STEPS_PER_ENV * N_ENVIRONMENTS) + 1;
     static constexpr TI EPISODE_STEP_LIMIT = 200;
