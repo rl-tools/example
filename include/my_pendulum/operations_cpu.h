@@ -1,22 +1,32 @@
+#include <string>
+
 namespace rl_tools{
-    template<typename DEVICE, typename SPEC>
-    std::string json(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::Parameters& parameters){
+    template <typename DEVICE, typename SPEC>
+    std::string json(DEVICE&, MyPendulum<SPEC>& env, typename MyPendulum<SPEC>::Parameters& parameters){
         return "{}";
     }
-
-    template<typename DEVICE, typename SPEC>
-    std::string json(DEVICE& device, const MyPendulum<SPEC>& env, const typename MyPendulum<SPEC>::Parameters& parameters, const typename MyPendulum<SPEC>::State& state){
+    template <typename DEVICE, typename SPEC>
+    std::string json(DEVICE&, MyPendulum<SPEC>& env, typename MyPendulum<SPEC>::Parameters& parameters, typename MyPendulum<SPEC>::State& state){
         std::string json = "{";
         json += "\"theta\":" + std::to_string(state.theta) + ",";
         json += "\"theta_dot\":" + std::to_string(state.theta_dot);
         json += "}";
         return json;
     }
+
     template <typename DEVICE, typename SPEC>
     std::string get_ui(DEVICE& device, MyPendulum<SPEC>& env){
-        // just the body of `function render(ctx, state, action) {` (so that it can be easily processed by `new Function("ctx", "state", "action", body)`
+        // Implement the functions `export async function render(ui_state, parameters, state, action)` and `export async function init(canvas, parameters, options)` and `export` them so that they are available as ES6 imports
         // Please have a look at https://studio.rl.tools which helps you create render functions interactively
         std::string ui = R"RL_TOOLS_LITERAL(
+export async function init(canvas, options){
+    // Simply saving the context for 2D environments
+    return {
+        ctx: canvas.getContext('2d')
+    }
+}
+export async function render(ui_state, parameters, state, action) {
+    const ctx = ui_state.ctx
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     const centerX = ctx.canvas.width / 2;
@@ -88,8 +98,8 @@ namespace rl_tools{
     ctx.lineTo(arrowX, arrowY);
     ctx.fillStyle = 'black';
     ctx.fill();
+}
         )RL_TOOLS_LITERAL";
         return ui;
     }
-
 }

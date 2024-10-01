@@ -3,11 +3,13 @@
 #set(RL_TOOLS_BACKEND_ENABLE_ACCELERATE ON) # if you are on macOS (fastest on Apple Silicon)
 add_subdirectory(external/rl_tools)
 
-add_executable(my_pendulum
-    src/main.cpp
-)
-#target_compile_definitions(my_pendulum PRIVATE BENCHMARK)
+add_executable(my_pendulum src/main.cpp)
 target_link_libraries(my_pendulum PRIVATE RLtools::RLtools)
+
+# The following target disables evaluations and checkpointing during training to assess the training time
+add_executable(my_pendulum_benchmark src/main.cpp)
+target_compile_definitions(my_pendulum_benchmark PRIVATE BENCHMARK)
+target_link_libraries(my_pendulum_benchmark PRIVATE RLtools::RLtools)
 
 
 

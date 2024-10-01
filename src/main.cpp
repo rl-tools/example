@@ -22,27 +22,32 @@ using TI = typename DEVICE::index_t;
 using PENDULUM_SPEC = MyPendulumSpecification<T, TI, MyPendulumParameters<T>>;
 using ENVIRONMENT = MyPendulum<PENDULUM_SPEC>;
 struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParameters<T, TI, ENVIRONMENT>{
-    struct PPO_PARAMETERS: rlt::rl::algorithms::ppo::DefaultParameters<T, TI>{
-        static constexpr T ACTION_ENTROPY_COEFFICIENT = 0.0;
-        static constexpr TI N_EPOCHS = 2;
-    };
-
+    static constexpr TI BATCH_SIZE = 256;
+    static constexpr TI ACTOR_HIDDEN_DIM = 64;
+    static constexpr TI CRITIC_HIDDEN_DIM = 64;
+    static constexpr TI ON_POLICY_RUNNER_STEPS_PER_ENV = 1024;
     static constexpr TI N_ENVIRONMENTS = 4;
-    static constexpr TI ON_POLICY_RUNNER_STEPS_PER_ENV = 256;
-    static constexpr TI BATCH_SIZE = 64;
     static constexpr TI TOTAL_STEP_LIMIT = 300000;
     static constexpr TI STEP_LIMIT = TOTAL_STEP_LIMIT/(ON_POLICY_RUNNER_STEPS_PER_ENV * N_ENVIRONMENTS) + 1;
     static constexpr TI EPISODE_STEP_LIMIT = 200;
+    using OPTIMIZER_PARAMETERS = rlt::nn::optimizers::adam::DEFAULT_PARAMETERS_PYTORCH<T>;
+    struct PPO_PARAMETERS: rlt::rl::algorithms::ppo::DefaultParameters<T, TI, BATCH_SIZE>{
+        static constexpr T ACTION_ENTROPY_COEFFICIENT = 0.0;
+        static constexpr TI N_EPOCHS = 2;
+        static constexpr T GAMMA = 0.9;
+        static constexpr T INITIAL_ACTION_STD = 2.0;
+        static constexpr bool NORMALIZE_OBSERVATIONS = true;
+    };
 };
 using LOOP_CORE_CONFIG = rlt::rl::algorithms::ppo::loop::core::Config<T, TI, RNG, ENVIRONMENT, LOOP_CORE_PARAMETERS>;
+#ifndef BENCHMARK
+using LOOP_EXTRACK_CONFIG = rlt::rl::loop::steps::extrack::Config<LOOP_CORE_CONFIG>; // Sets up the experiment tracking structure (https://docs.rl.tools/10-Experiment%20Tracking.html)
 template <typename NEXT>
 struct LOOP_EVAL_PARAMETERS: rlt::rl::loop::steps::evaluation::Parameters<T, TI, NEXT>{
     static constexpr TI EVALUATION_INTERVAL = 4;
     static constexpr TI NUM_EVALUATION_EPISODES = 10;
     static constexpr TI N_EVALUATIONS = NEXT::CORE_PARAMETERS::STEP_LIMIT / EVALUATION_INTERVAL;
 };
-#ifndef BENCHMARK
-using LOOP_EXTRACK_CONFIG = rlt::rl::loop::steps::extrack::Config<LOOP_CORE_CONFIG>; // Sets up the experiment tracking structure (https://docs.rl.tools/10-Experiment%20Tracking.html)
 using LOOP_EVALUATION_CONFIG = rlt::rl::loop::steps::evaluation::Config<LOOP_EXTRACK_CONFIG, LOOP_EVAL_PARAMETERS<LOOP_EXTRACK_CONFIG>>; // Evaluates the policy in a fixed interval and logs the return
 struct LOOP_SAVE_TRAJECTORIES_PARAMETERS: rlt::rl::loop::steps::save_trajectories::Parameters<T, TI, LOOP_EVALUATION_CONFIG>{
     static constexpr TI INTERVAL_TEMP = LOOP_CORE_CONFIG::CORE_PARAMETERS::STEP_LIMIT / 10;
@@ -84,5 +89,5 @@ int main(){
     }
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end_time-start_time;
-    std::cout << "Training time: " << diff.count() << std::endl;
+    std::cout << "Training time: " << diff.count() << " s" << std::endl;
 }
