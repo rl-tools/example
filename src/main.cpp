@@ -1,11 +1,14 @@
 #include <rl_tools/operations/cpu_mux.h>
 #include <rl_tools/nn/operations_cpu_mux.h>
-#include <rl_tools/nn_models/operations_cpu.h>
+#include <rl_tools/nn/layers/standardize/operations_generic.h>
+#include <rl_tools/nn_models/mlp_unconditional_stddev/operations_generic.h>
+#include <rl_tools/nn_models/sequential/operations_generic.h>
 
 #include "../include/my_pendulum/my_pendulum.h"
 #include "../include/my_pendulum/operations_generic.h"
 #include "../include/my_pendulum/operations_cpu.h" // JSON conversion functions for the rl::loop::steps::save_trajectories step (stored according to the experiment tracking specification: https://docs.rl.tools/10-Experiment%20Tracking.html)
 
+#include <rl_tools/rl/components/on_policy_runner/operations_cpu.h>
 #include <rl_tools/rl/algorithms/ppo/loop/core/config.h>
 #include <rl_tools/rl/algorithms/ppo/loop/core/operations_generic.h>
 #include <rl_tools/rl/loop/steps/extrack/operations_cpu.h>
@@ -15,7 +18,10 @@
 namespace rlt = rl_tools;
 
 
-using DEVICE = rlt::devices::DEVICE_FACTORY<>;
+struct DEV_SPEC: rlt::devices::cpu::Specification<rlt::devices::math::CPU, rlt::devices::random::CPU, rlt::LOGGER_FACTORY<>>{
+    using EXECUTION_HINTS = rlt::rl::components::on_policy_runner::ExecutionHints<int, 8>;
+};
+using DEVICE = rlt::devices::DEVICE_FACTORY<DEV_SPEC>;
 using RNG = decltype(rlt::random::default_engine(typename DEVICE::SPEC::RANDOM{}));
 using T = float;
 using TI = typename DEVICE::index_t;
