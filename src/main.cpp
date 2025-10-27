@@ -1,10 +1,12 @@
 #include <rl_tools/operations/cpu_mux.h>
-#include <rl_tools/nn/operations_cpu_mux.h>
-#include <rl_tools/nn_models/operations_cpu.h>
 
 #include "../include/my_pendulum/my_pendulum.h"
 #include "../include/my_pendulum/operations_generic.h"
 #include "../include/my_pendulum/operations_cpu.h" // JSON conversion functions for the rl::loop::steps::save_trajectories step (stored according to the experiment tracking specification: https://docs.rl.tools/10-Experiment%20Tracking.html)
+
+#include <rl_tools/nn/optimizers/adam/instance/operations_generic.h>
+#include <rl_tools/nn/operations_cpu_mux.h>
+#include <rl_tools/nn_models/operations_cpu.h>
 
 #include <rl_tools/rl/algorithms/ppo/loop/core/config.h>
 #include <rl_tools/rl/algorithms/ppo/loop/core/operations_generic.h>
@@ -16,12 +18,13 @@ namespace rlt = rl_tools;
 
 
 using DEVICE = rlt::devices::DEVICE_FACTORY<>;
-using RNG = decltype(rlt::random::default_engine(typename DEVICE::SPEC::RANDOM{}));
+using RNG = DEVICE::SPEC::RANDOM::ENGINE<>;
 using T = float;
+using TYPE_POLICY = rlt::numeric_types::Policy<T>;
 using TI = typename DEVICE::index_t;
 using PENDULUM_SPEC = MyPendulumSpecification<T, TI, MyPendulumParameters<T>>;
 using ENVIRONMENT = MyPendulum<PENDULUM_SPEC>;
-struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParameters<T, TI, ENVIRONMENT>{
+struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParameters<TYPE_POLICY, TI, ENVIRONMENT>{
     static constexpr TI N_ENVIRONMENTS = 8;
     static constexpr TI ON_POLICY_RUNNER_STEPS_PER_ENV = 128;
     static constexpr TI BATCH_SIZE = 128;
@@ -32,28 +35,28 @@ struct LOOP_CORE_PARAMETERS: rlt::rl::algorithms::ppo::loop::core::DefaultParame
     static constexpr auto CRITIC_ACTIVATION_FUNCTION = rlt::nn::activation_functions::ActivationFunction::FAST_TANH;
     static constexpr TI STEP_LIMIT = TOTAL_STEP_LIMIT/(ON_POLICY_RUNNER_STEPS_PER_ENV * N_ENVIRONMENTS) + 1;
     static constexpr TI EPISODE_STEP_LIMIT = ENVIRONMENT::EPISODE_STEP_LIMIT;
-    struct OPTIMIZER_PARAMETERS: rlt::nn::optimizers::adam::DEFAULT_PARAMETERS_TENSORFLOW<T>{
+    struct OPTIMIZER_PARAMETERS: rlt::nn::optimizers::adam::DEFAULT_PARAMETERS_TENSORFLOW<TYPE_POLICY>{
         static constexpr T ALPHA = 0.001;
     };
     static constexpr bool NORMALIZE_OBSERVATIONS = true;
-    struct PPO_PARAMETERS: rlt::rl::algorithms::ppo::DefaultParameters<T, TI, BATCH_SIZE>{
+    struct PPO_PARAMETERS: rlt::rl::algorithms::ppo::DefaultParameters<TYPE_POLICY, TI, BATCH_SIZE>{
         static constexpr T ACTION_ENTROPY_COEFFICIENT = 0.0;
         static constexpr TI N_EPOCHS = 1;
         static constexpr T GAMMA = 0.9;
         static constexpr T INITIAL_ACTION_STD = 2.0;
     };
 };
-using LOOP_CORE_CONFIG = rlt::rl::algorithms::ppo::loop::core::Config<T, TI, RNG, ENVIRONMENT, LOOP_CORE_PARAMETERS>;
+using LOOP_CORE_CONFIG = rlt::rl::algorithms::ppo::loop::core::Config<TYPE_POLICY, TI, RNG, ENVIRONMENT, LOOP_CORE_PARAMETERS>;
 #ifndef BENCHMARK
 using LOOP_EXTRACK_CONFIG = rlt::rl::loop::steps::extrack::Config<LOOP_CORE_CONFIG>; // Sets up the experiment tracking structure (https://docs.rl.tools/10-Experiment%20Tracking.html)
 template <typename NEXT>
-struct LOOP_EVAL_PARAMETERS: rlt::rl::loop::steps::evaluation::Parameters<T, TI, NEXT>{
+struct LOOP_EVAL_PARAMETERS: rlt::rl::loop::steps::evaluation::Parameters<TYPE_POLICY, TI, NEXT>{
     static constexpr TI EVALUATION_INTERVAL = LOOP_CORE_CONFIG::CORE_PARAMETERS::STEP_LIMIT / 10;
     static constexpr TI NUM_EVALUATION_EPISODES = 10;
     static constexpr TI N_EVALUATIONS = NEXT::CORE_PARAMETERS::STEP_LIMIT / EVALUATION_INTERVAL;
 };
 using LOOP_EVALUATION_CONFIG = rlt::rl::loop::steps::evaluation::Config<LOOP_EXTRACK_CONFIG, LOOP_EVAL_PARAMETERS<LOOP_EXTRACK_CONFIG>>; // Evaluates the policy in a fixed interval and logs the return
-struct LOOP_SAVE_TRAJECTORIES_PARAMETERS: rlt::rl::loop::steps::save_trajectories::Parameters<T, TI, LOOP_EVALUATION_CONFIG>{
+struct LOOP_SAVE_TRAJECTORIES_PARAMETERS: rlt::rl::loop::steps::save_trajectories::Parameters<TYPE_POLICY, TI, LOOP_EVALUATION_CONFIG>{
     static constexpr TI INTERVAL_TEMP = LOOP_CORE_CONFIG::CORE_PARAMETERS::STEP_LIMIT / 3;
     static constexpr TI INTERVAL = INTERVAL_TEMP == 0 ? 1 : INTERVAL_TEMP;
     static constexpr TI NUM_EPISODES = 10;
@@ -77,7 +80,7 @@ int main(){
     LOOP_STATE ls;
 #ifndef BENCHMARK
     // Set experiment tracking info
-    ls.extrack_name = "example";
+    ls.extrack_config.name = "example";
 #endif
     rlt::malloc(device, ls);
     rlt::init(device, ls, seed);
