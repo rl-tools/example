@@ -5,12 +5,12 @@ This example implements a full pendulum environment (including a visualization) 
 git clone https://github.com/rl-tools/example
 cd example
 git submodule update --init external/rl_tools
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build .
-./my_pendulum
+cmake . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target my_pendulum
+./build/my_pendulum
+./external/rl_tools/tools/serve.sh
 ```
+Navigate to [http://localhost:8080](http://localhost:8080) to see the visualization.
 
 
 

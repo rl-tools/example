@@ -76,6 +76,7 @@ using LOOP_STATE = typename LOOP_CONFIG::template State<LOOP_CONFIG>;
 
 int main(){
     DEVICE device;
+    rlt::init(device);
     TI seed = 0;
     LOOP_STATE ls;
 #ifndef BENCHMARK
